@@ -4,12 +4,12 @@
 
 This repository provides a `gicisky-tag-writer` script and a `gicisky_tag` Python library to write custom images to a Gicisky / PICKSMART electronic price tag (also called electronic shelf label, or ESL), provided that it's programmable via Bluetooth ESL. So far the project has been tested only on the model "2.1 inch EPA LCD 250x122 BWR". If you have a different device, feel free to open a PR to generalize the code.
 
-This Python project uses Poetry to manage all dependencies. To run the script from the repository folder:
+This Python project uses [uv](https://github.com/astral-sh/uv) to manage all dependencies. To run the script from the repository folder:
 ```bash
 git clone https://github.com/fpoli/gicisky-tag.git
 cd gicisky-tag
-poetry install
-poetry run gicisky-tag-writer --help
+uv sync
+uv run gicisky-tag-writer --help
 ```
 
 Alternatively, to install the script without cloning the repository, use [pipx](https://pypa.github.io/pipx/):
