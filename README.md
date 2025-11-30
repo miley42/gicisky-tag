@@ -2,7 +2,7 @@
 
 ![Tag](docs/tag.jpg)
 
-This repository provides a `gicisky-tag-writer ` script and a `gicisky_tag` Python library to write custom images to a Gicisky / PICKSMART electronic price tag (also called electronic shelf label, or ESL), provided that it's programmable via Bluetooth ESL. So far the project has been tested only on the model "2.1 inch EPA LCD 250x122 BWR". If you have a different device, feel free to open a PR to generalize the code.
+This repository provides a `gicisky-tag-writer` script and a `gicisky_tag` Python library to write custom images to a Gicisky / PICKSMART electronic price tag (also called electronic shelf label, or ESL), provided that it's programmable via Bluetooth ESL. So far the project has been tested only on the model "2.1 inch EPA LCD 250x122 BWR". If you have a different device, feel free to open a PR to generalize the code.
 
 This Python project uses Poetry to manage all dependencies. To run the script from the repository folder:
 ```bash
@@ -12,7 +12,7 @@ poetry install
 poetry run gicisky-tag-writer --help
 ```
 
-Alternatively, to install the script without cloning the repository use [pipx](https://pypa.github.io/pipx/):
+Alternatively, to install the script without cloning the repository, use [pipx](https://pypa.github.io/pipx/):
 ```bash
 pipx install git+https://github.com/fpoli/gicisky-tag.git
 gicisky-tag-writer --help
@@ -37,9 +37,15 @@ options:
 ```
 ## Documentation
 
-Officially, to write to the tags you need to [register an account](http://a.picksmart.cn:8082/index) and [download an app](http://www.picksmart.cn/index.php/page-22-11.html) on the Picksmart website. In my case, I used the APK [`ble-tag-english-app-release-v3.1.37.apk`](http://a.picksmart.cn:8088/picksmart/app/ble-tag-english-app-release-v3.1.32.apk). I don't know why their app is not on the official app store, so install and use it at your own risk. This project makes it possible to write custom images to the tags without using any proprietary service or app.
+Officially, to write to the tags, you need to [register an account](http://a.picksmart.cn:8082/index) and [download an app](http://www.picksmart.cn/index.php/page-22-11.html) on the Picksmart website. In my case, I used the APK [`ble-tag-english-app-release-v3.1.37.apk`](http://a.picksmart.cn:8088/picksmart/app/ble-tag-english-app-release-v3.1.32.apk).
+I don't know why their app is not on the official app store, so install and use it at your own risk.
+This project makes it possible to write custom images to the tags without using any proprietary service or app.
 
-The Bluetooth ESL protocol to update the screen is described [here](https://zhuanlan.zhihu.com/p/633113543). Independently, [`atc1441`](https://github.com/atc1441) reverse-engineered the protocol and published a Javascript image uploader ([video](https://www.youtube.com/watch?v=Cp4gNXtlbGk), [repo](https://github.com/atc1441/ATC_GICISKY_ESL), [uploader](https://atc1441.github.io/ATC_GICISKY_Paper_Image_Upload.html)) that in my case managed to write something on the screen, altough the result was gibberish because the base-64 encoded image data provided as default in the uploader is for a different screen model. Modifying the image data is not trivial, because it uses an undocumented compression format. Disassembling the APK doesn't help much to shed light on this format, because the compression function is implemented natively. One way to work around the unknown format is to flash a new custom firmware on the tags, like `atc1441` and [`rbaron`](https://github.com/rbaron) did for the TLSR tags ([firmware repo](https://github.com/atc1441/ATC_TLSR_Paper), [uploader repo](https://github.com/rbaron/pricetag-printer)). However, that's not necessary for the Gicisky tags since [`Cabalist`](https://github.com/Cabalist) managed to reverse-engineer the image format ([his notes](https://github.com/Cabalist/gicisky_image_notes)), which turns out to be a form of run-length encoding. Producing uncompressed images is not that difficult, so that's what this project does. The disadvantage is that sending the image data to the screen is slower than the official app: about 10 seconds instead of just 3 on some examples that I tried. Feel free to contribute implementing some real compression.
+The Bluetooth ESL protocol to update the screen is described [here](https://zhuanlan.zhihu.com/p/633113543).
+Independently, [`atc1441`](https://github.com/atc1441) reverse-engineered the protocol and published a JavaScript image uploader ([video](https://www.youtube.com/watch?v=Cp4gNXtlbGk), [repo](https://github.com/atc1441/ATC_GICISKY_ESL), [uploader](https://atc1441.github.io/ATC_GICISKY_Paper_Image_Upload.html)) that in my case managed to write something on the screen, although the result was gibberish because the base-64 encoded image data provided as default in the uploader is for a different screen model.
+Modifying the image data is not trivial, because it uses an undocumented compression format.
+[`Cabalist`](https://github.com/Cabalist) partially reverse-engineered the image format ([his notes](https://github.com/Cabalist/gicisky_image_notes)) revealing a form of run-length encoding. Later, it was discovered that the compression format is [QuickLZ](https://github.com/RT-Thread-packages/quicklz), compressing each line independently at level 1 in streaming mode.
+For simplicity, this project transmits uncompressed images. In my tests, compressed images turned out to be often bigger than the uncompressed ones, probably due to the dithering that makes compression harder, and also because the streaming compression state is not reused across lines.
 
 A copy of some of the material linked above is stored in the `docs` folder.
 
@@ -50,7 +56,7 @@ A copy of some of the material linked above is stored in the `docs` folder.
 * Brand: Gicisky / PICKSMART
 * Batteries: 2 replaceable CR2450 3V
 
-The `xxyyzzkk` above correspond to the number encoded by the barcode on the right of the screen.
+The `xxyyzzkk` above corresponds to the number encoded by the barcode on the right of the screen.
 
 ## License
 
