@@ -3,7 +3,7 @@ import asyncio
 import argparse
 import logging
 from PIL import Image
-from gicisky_tag.encoder import encode_image, Dither
+from gicisky_tag.encoder import encode_image, Dither, image_to_bytes
 from gicisky_tag.writer import send_data_to_screen
 from gicisky_tag.scanner import find_address
 from gicisky_tag.log import logger
@@ -13,10 +13,7 @@ async def start(args):
     logger.info("Loading image...")
     # TODO: Retrieve the model of the tag (e.g. BWR or BW, screen size...) from the broadcasted BLE
     # manufacturer data and adapt the image loading based on that.
-    image = Image.open(args.image)
-    image_data = encode_image(
-        image, dithering=args.dithering, debug_folder=args.debug_folder
-    )
+    image_data = image_to_bytes(args.image)
 
     if args.address is None:
         logger.info("Scanning...")

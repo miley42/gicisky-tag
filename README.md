@@ -1,3 +1,22 @@
+# About this fork
+
+This fork is a quick and dirty solution for pushing images to a 2.1" BW Picksmart tag that has some differences in the protocol and image encoding.
+
+The code version in this fork currently only supports black and white images, no red, no dithering.
+
+With the original code, it got stuck at the first `Sending image part` because the tag didn't acknowledge it (didn't send a command to request the following part).
+This is resolved by adding three 0x00 bytes at the end of the 0x02 image size command. (The web-based uploader at https://atc1441.github.io/ATC_GICISKY_Paper_Image_Upload.html
+also uses this command).
+
+The image encoding for this tag sets pixels in squares of four. So the first bit is the top left pixel of the squre, the second top right, the third bottom left,
+the fourth bottom right. Using these squares, the image is written in vertical lines, starting in the bottom right corner.
+
+Also, even though the screen has a resolution of 250x122, it requires image data with a resolution of 250x132, of which the top 10 pixels are cropped.
+
+Example command: `$ gicisky-tag-writer --image example.png -v`, with example.png being a 250x132 black and white image file.
+
+Original README follows:
+
 # Gicisky Bluetooth ESL e-paper tag
 
 ![Tag](docs/tag.jpg)

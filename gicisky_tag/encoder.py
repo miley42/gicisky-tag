@@ -163,3 +163,63 @@ def compress_bitmap(bitmap, image_shape):
         )
         encoded_bitmap += encoded_line
     return encoded_bitmap
+
+
+def image_to_bytes(path):
+    """
+    Convert a black-and-white PNG image into a byte array.
+
+    Each 2x2 pixel block becomes a 4-bit nibble:
+      bit 0 (1): top-left
+      bit 1 (2): top-right
+      bit 2 (4): bottom-left
+      bit 3 (8): bottom-right
+
+    Blocks are read in vertical lines, starting from the bottom-right corner.
+
+    Returns:
+        bytes
+    """
+    img = Image.open(path).convert("1")
+    width, height = img.size
+    pixels = img.load()
+
+    if width % 2 != 0 or height % 2 != 0:
+        raise ValueError("Image width and height must be even")
+
+    data = bytearray()
+    half_byte = None
+
+    # Vertical lines, right to left
+    for x in range(width - 2, -1, -2):
+        # Bottom to top
+        for y in range(height - 2, -1, -2):
+            nibble = 0
+
+            # Top-left
+            if pixels[x, y] == 255:
+                nibble |= 1
+
+            # Top-right
+            if pixels[x + 1, y] == 255:
+                nibble |= 2
+
+            # Bottom-left
+            if pixels[x, y + 1] == 255:
+                nibble |= 4
+
+            # Bottom-right
+            if pixels[x + 1, y + 1] == 255:
+                nibble |= 8
+
+            if half_byte is None:
+                half_byte = nibble
+            else:
+                data.append(nibble | (half_byte << 4))
+                half_byte = None
+
+    # Pad final nibble if needed
+    if half_byte is not None:
+        data.append(half_byte)
+
+    return bytes(data)
